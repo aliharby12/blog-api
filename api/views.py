@@ -2,9 +2,12 @@ from rest_framework.generics import (ListAPIView,
                                      RetrieveUpdateAPIView,
                                      RetrieveAPIView,
                                      CreateAPIView)
-                                     
+
 from blogapp.models import Post
 from django.shortcuts import get_object_or_404
+from .pagination import LimitOffsetPagination, PageNumberPagination
+from rest_framework.filters import (SearchFilter,
+                                    OrderingFilter)
 from .serializers import (PostListSerializer,
                           PostCreateSerializer,
                           PostDetailSerializer,
@@ -21,6 +24,9 @@ from .permissions import IsOwnerOrReadOnly
 class PostListAPIView(ListAPIView):
     queryset = Post.objects.all()
     serializer_class = PostListSerializer
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['title', 'content', 'author__first_name']
+    pagination_class = PageNumberPagination
 
 
 class PostCreateAPIView(CreateAPIView):
@@ -36,11 +42,8 @@ class PostDetailAPIView(RetrieveAPIView):
     queryset = Post.objects.all()
     serializer_class = PostDetailSerializer
 
-
-
-
-    def delete(self, request, id):
-        queryset = get_object_or_404(Post, id = id)
+    def delete(self, request, pk):
+        queryset = get_object_or_404(Post, pk=pk)
         queryset.delete()
 
 
